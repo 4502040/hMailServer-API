@@ -305,7 +305,26 @@ END:VCARD";
 
             int insert = cmd.ExecuteNonQuery();
 
+            string select = @"select contact_id from contacts where del=0 and email=@email and user_id=@user_id";
+            cmd = new MySqlCommand(select, connection);
+            cmd.Parameters.AddWithValue("@email", Email);
+            cmd.Parameters.AddWithValue("@user_id", 18);
+
+            var contact_id = cmd.ExecuteScalar();
+
+            if (contact_id != null)
+            {
+                string insertIntoGroup = @"insert into contactgroupmembers(contactgroup_id,contact_id,created) values(@contactgroup_id,@contact_id,@created);";
+                cmd = new MySqlCommand(insertIntoGroup, connection);
+                cmd.Parameters.AddWithValue("@contactgroup_id", groupId);
+                cmd.Parameters.AddWithValue("@contact_id", Convert.ToInt32(contact_id));
+                cmd.Parameters.AddWithValue("@created", DateTime.Now);
+
+                int insertIntoGroupResult = cmd.ExecuteNonQuery();
+            }
+
             txtLog.AppendText("Добавлено в контакты: "+Email+"-"+fio+Environment.NewLine);
+
 
         }
 
